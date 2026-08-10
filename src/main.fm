@@ -15,7 +15,7 @@ export struct Battery {
     charging: Bool
     onAcPower: Bool
     saver: Bool
-    power_saving: Bool
+    saver: Bool
     remaining: Duration
     full: Duration
 }
