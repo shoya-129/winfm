@@ -69,10 +69,10 @@ let username = winfm.system.username()
 let cpus = winfm.system.cpus()
 let uptime = winfm.system.uptime()
 
-print(hostname)
-print(username)
-print(cpus)
-print(uptime)
+println(hostname)
+println(username)
+println(cpus)
+println(uptime)
 ```
 
 ### System API
@@ -125,12 +125,12 @@ winfm.system.shutdown()
 ```flame
 import winfm
 
-print("=== System ===")
+println("=== System ===")
 
-print("Hostname: " + winfm.system.hostname())
-print("Username: " + winfm.system.username())
-print("CPUs: " + winfm.system.cpus().toString())
-print("Uptime: " + winfm.system.uptime().toString())
+println("Hostname: " + winfm.system.hostname())
+println("Username: " + winfm.system.username())
+println("CPUs: " + winfm.system.cpus().toString())
+println("Uptime: " + winfm.system.uptime().toString())
 
 winfm.system.lock()
 ```
@@ -152,11 +152,11 @@ import winfm
 
 let battery = winfm.battery.status()
 
-print(battery.percent)
-print(battery.charging)
-print(battery.onAcPower)
-print(battery.saver)
-print(battery.power_saving)
+println(battery.percent)
+println(battery.charging)
+println(battery.onAcPower)
+println(battery.saver)
+println(battery.power_saving)
 ```
 
 The returned `Battery` value contains:
@@ -182,10 +182,10 @@ let battery = winfm.battery.status()
 
 let remaining = battery.remaining
 
-print(remaining.h)
-print(remaining.min)
-print(remaining.sec)
-print(remaining.available)
+println(remaining.h)
+println(remaining.min)
+println(remaining.sec)
+println(remaining.available)
 ```
 
 A `Duration` contains:
@@ -205,7 +205,7 @@ import winfm
 let battery = winfm.battery.status()
 
 if battery.remaining.available {
-    print(
+    println(
         "Remaining: " +
         battery.remaining.h.toString() +
         "h " +
@@ -228,7 +228,7 @@ Read the current battery saver state:
 ```flame
 import winfm
 
-print(winfm.battery.batterySaver())
+println(winfm.battery.batterySaver())
 ```
 
 Toggle power saving:
@@ -238,7 +238,7 @@ import winfm
 
 let changed = winfm.battery.batterySaverToggle()
 
-print(changed)
+println(changed)
 ```
 
 The toggle avoids changing the power-saving mode while the machine is connected to AC power or while the battery is charging.
@@ -258,16 +258,16 @@ import winfm
 
 let battery = winfm.battery.status()
 
-print("=== Battery ===")
+println("=== Battery ===")
 
-print("Battery: " + battery.percent.toString() + "%")
-print("Charging: " + battery.charging.toString())
-print("AC Power: " + battery.onAcPower.toString())
-print("Battery Saver: " + battery.saver.toString())
-print("Power Saving: " + battery.power_saving.toString())
+println("Battery: " + battery.percent.toString() + "%")
+println("Charging: " + battery.charging.toString())
+println("AC Power: " + battery.onAcPower.toString())
+println("Battery Saver: " + battery.saver.toString())
+println("Power Saving: " + battery.power_saving.toString())
 
 if battery.remaining.available {
-    print(
+    println(
         "Remaining: " +
         battery.remaining.h.toString() +
         "h " +
@@ -279,7 +279,7 @@ if battery.remaining.available {
 }
 
 if battery.full.available {
-    print(
+    println(
         "Full Runtime: " +
         battery.full.h.toString() +
         "h " +
@@ -318,7 +318,7 @@ import native.winfm
 
 let clipboard = winfm.Clipboard.init()
 
-print(clipboard.get())
+println(clipboard.get())
 ```
 
 ### Set clipboard text
@@ -357,12 +357,12 @@ import native.winfm
 
 let clipboard = winfm.Clipboard.init()
 
-print(clipboard.get())
+println(clipboard.get())
 
 let result = clipboard.set("Hello from Flame")
 
-print(result)
-print(clipboard.get())
+println(result)
+println(clipboard.get())
 
 clipboard.clear()
 ```
@@ -392,7 +392,7 @@ import native.winfm
 
 let volume = winfm.Volume.init()
 
-print(volume.percent())
+println(volume.percent())
 ```
 
 The returned value is a percentage from `0` to `100`.
@@ -416,7 +416,7 @@ import native.winfm
 
 let volume = winfm.Volume.init()
 
-print(volume.muted())
+println(volume.muted())
 ```
 
 ### Mute and unmute
@@ -458,12 +458,12 @@ import native.winfm
 
 let volume = winfm.Volume.init()
 
-print("Volume: " + volume.percent().toString())
-print("Muted: " + volume.muted().toString())
+println("Volume: " + volume.percent().toString())
+println("Muted: " + volume.muted().toString())
 
 volume.set(50)
 
-print("New Volume: " + volume.percent().toString())
+println("New Volume: " + volume.percent().toString())
 
 volume.set_muted(false)
 ```
@@ -541,25 +541,25 @@ The following example demonstrates the main `winfm` APIs together:
 import winfm
 import native.winfm
 
-print("=== System ===")
+println("=== System ===")
 
-print("Hostname: " + winfm.system.hostname())
-print("Username: " + winfm.system.username())
-print("CPUs: " + winfm.system.cpus().toString())
-print("Uptime: " + winfm.system.uptime().toString())
+println("Hostname: " + winfm.system.hostname())
+println("Username: " + winfm.system.username())
+println("CPUs: " + winfm.system.cpus().toString())
+println("Uptime: " + winfm.system.uptime().toString())
 
-print("=== Battery ===")
+println("=== Battery ===")
 
 let battery = winfm.battery.status()
 
-print("Battery: " + battery.percent.toString() + "%")
-print("Charging: " + battery.charging.toString())
-print("AC Power: " + battery.onAcPower.toString())
-print("Battery Saver: " + battery.saver.toString())
-print("Power Saving: " + battery.power_saving.toString())
+println("Battery: " + battery.percent.toString() + "%")
+println("Charging: " + battery.charging.toString())
+println("AC Power: " + battery.onAcPower.toString())
+println("Battery Saver: " + battery.saver.toString())
+println("Power Saving: " + battery.power_saving.toString())
 
 if battery.remaining.available {
-    print(
+    println(
         "Remaining: " +
         battery.remaining.h.toString() +
         "h " +
@@ -570,24 +570,24 @@ if battery.remaining.available {
     )
 }
 
-print("=== Clipboard ===")
+println("=== Clipboard ===")
 
 let clipboard = winfm.Clipboard.init()
 
 clipboard.set("Hello from Flame")
 
-print(clipboard.get())
+println(clipboard.get())
 
-print("=== Volume ===")
+println("=== Volume ===")
 
 let volume = winfm.Volume.init()
 
-print("Volume: " + volume.percent().toString())
-print("Muted: " + volume.muted().toString())
+println("Volume: " + volume.percent().toString())
+println("Muted: " + volume.muted().toString())
 
 volume.set(50)
 
-print("New Volume: " + volume.percent().toString())
+println("New Volume: " + volume.percent().toString())
 ```
 
 ## Notice
