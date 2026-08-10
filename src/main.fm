@@ -2,7 +2,7 @@ import native.winfm
 import std.thread
 import std.fs
 
-struct Duration {
+export struct Duration {
     h: Int
     min: Int
     sec: Int
@@ -10,17 +10,17 @@ struct Duration {
 }
 
 
-struct Battery {
+export struct Battery {
     percent: Int
     charging: Bool
     onAcPower: Bool
     saver: Bool
-    power_saving: Bool
+    saver: Bool
     remaining: Duration
     full: Duration
 }
 
-fn extractSeconds(seconds: Int) -> Duration {
+export fn extractSeconds(seconds: Int) -> Duration {
     if seconds < 0 {
         return Duration {
             h: 0
@@ -42,7 +42,7 @@ fn extractSeconds(seconds: Int) -> Duration {
     }
 }
 
-fn extractTime(ms: Int) -> Formula {
+export fn extractTime(ms: Int) -> Formula {
     let total_seconds = ms / 1000
     let hours = total_seconds / 3600
     let minutes = (total_seconds % 3600) / 60

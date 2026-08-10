@@ -157,6 +157,11 @@ println(battery.charging)
 println(battery.onAcPower)
 println(battery.saver)
 println(battery.power_saving)
+print(battery.percent)
+print(battery.charging)
+print(battery.onAcPower)
+print(battery.saver)
+print(battery.saver)
 ```
 
 The returned `Battery` value contains:
@@ -167,7 +172,7 @@ The returned `Battery` value contains:
 | `charging`     | Whether the battery is charging               |
 | `onAcPower`    | Whether the computer is connected to AC power |
 | `saver`        | Whether Windows battery saver is active       |
-| `power_saving` | Current power-saving state                    |
+| `saver`        | Current power-saving state                    |
 | `remaining`    | Estimated remaining battery runtime           |
 | `full`         | Estimated full battery runtime                |
 
