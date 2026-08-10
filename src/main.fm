@@ -1,0 +1,174 @@
+import native.winfm
+import std.thread
+import std.fs
+
+struct Duration {
+    h: Int
+    min: Int
+    sec: Int
+    available: Bool
+}
+
+
+struct Battery {
+    percent: Int
+    charging: Bool
+    onAcPower: Bool
+    saver: Bool
+    power_saving: Bool
+    remaining: Duration
+    full: Duration
+}
+
+fn extractSeconds(seconds: Int) -> Duration {
+    if seconds < 0 {
+        return Duration {
+            h: 0
+            min: 0
+            sec: 0
+            available: false
+        }
+    }
+
+    let hours = seconds / 3600
+    let minutes = (seconds % 3600) / 60
+    let secs = seconds % 60
+
+    return Duration {
+        h: hours
+        min: minutes
+        sec: secs
+        available: true
+    }
+}
+
+fn extractTime(ms: Int) -> Formula {
+    let total_seconds = ms / 1000
+    let hours = total_seconds / 3600
+    let minutes = (total_seconds % 3600) / 60
+    let seconds = total_seconds % 60
+    return formula {
+        h: hours,
+        min: minutes,
+        sec: seconds
+    }
+
+}
+
+export const system = formula {
+    // ─────────────────────────────────────
+    // Session / Machine
+    // ─────────────────────────────────────
+
+    sleep: () {
+        return winfm?.sleep()
+    }
+
+    lock: () {
+        return winfm?.lock()
+    }
+
+    restart: () {
+        return winfm?.restart()
+    }
+
+    shutdown: () {
+        return winfm?.shutdown()
+    }
+
+    // ─────────────────────────────────────
+    // System Information
+    // ─────────────────────────────────────
+    
+    hostname: () {
+        return winfm?.hostname()
+    }
+
+    username: () {
+        return winfm?.username()
+    }
+
+    uptime: () {
+        return extractTime(winfm?.uptime())
+    }
+
+    cpus: () {
+        return winfm?.cpu_count()
+    }
+
+}
+
+export const battery = formula {
+    status: () {
+        let handle = thread {
+            let percent = winfm?.battery_percent()
+            let charging = winfm?.battery_charging()
+            let ac = winfm?.battery_on_ac_power()
+            let saver = winfm?.battery_saver()
+            let remaining = winfm?.battery_remaining_seconds()
+            let full = winfm?.battery_full_seconds()
+
+            let percent_value = percent.tryInt()
+            let remaining_value = remaining.tryInt()
+            let full_value = full.tryInt()
+
+            return Battery {
+                percent: percent_value
+                charging: charging.tryBool()
+                onAcPower: ac.tryBool()
+                saver: saver.tryBool()
+                remainng: extractSeconds(remaining_value)
+                full: extractSeconds(full_value)
+            }
+        }
+
+        return await handle
+    }
+
+    batterySaver: () {
+        return winfm?.battery_saver()
+    }
+
+    batterySaverToggle: () {
+        let saver = winfm?.battery_saver()
+        let charging = winfm?.battery_charging()
+        let ac = winfm?.battery_on_ac_power()
+
+        // Never change power mode while connected to AC.
+        if ac == true {
+            return false
+        }
+
+        // Don't change power mode while charging.
+        if charging == true {
+            return false
+        }
+
+        if saver == false {
+            return winfm?.enable_power_saving()
+        }
+
+        if saver == true {
+            return winfm?.disable_power_saving()
+        }
+
+        return false
+    }
+}
+
+// let c = winfm?.Clipboard.init()
+// c.get() // c.set("hello) // c.clear()
+
+
+
+// let volume = winfm?.Volume.init()
+
+// print(volume.percent())
+
+// volume.set(50)
+
+// print(volume.percent())
+
+// print(volume.muted())
+
+// volume.set_muted(false)
