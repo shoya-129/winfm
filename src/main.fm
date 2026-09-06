@@ -1,6 +1,8 @@
-import native.winfm
+package winfm
+import native.winfmplg
 import std.thread
 import std.fs
+
 
 export struct Duration {
     h: Int
@@ -9,12 +11,10 @@ export struct Duration {
     available: Bool
 }
 
-
 export struct Battery {
     percent: Int
     charging: Bool
     onAcPower: Bool
-    saver: Bool
     saver: Bool
     remaining: Duration
     full: Duration
@@ -28,6 +28,7 @@ export fn extractSeconds(seconds: Int) -> Duration {
             sec: 0
             available: false
         }
+
     }
 
     let hours = seconds / 3600
@@ -40,6 +41,7 @@ export fn extractSeconds(seconds: Int) -> Duration {
         sec: secs
         available: true
     }
+
 }
 
 export fn extractTime(ms: Int) -> Formula {
@@ -47,6 +49,7 @@ export fn extractTime(ms: Int) -> Formula {
     let hours = total_seconds / 3600
     let minutes = (total_seconds % 3600) / 60
     let seconds = total_seconds % 60
+
     return formula {
         h: hours,
         min: minutes,
@@ -59,41 +62,39 @@ export const system = formula {
     // ─────────────────────────────────────
     // Session / Machine
     // ─────────────────────────────────────
-
     sleep: () {
-        return winfm?.sleep()
+        return winfmplg?.sleep()
     }
 
     lock: () {
-        return winfm?.lock()
+        return winfmplg?.lock()
     }
 
     restart: () {
-        return winfm?.restart()
+        return winfmplg?.restart()
     }
 
     shutdown: () {
-        return winfm?.shutdown()
+        return winfmplg?.shutdown()
     }
 
     // ─────────────────────────────────────
     // System Information
     // ─────────────────────────────────────
-    
     hostname: () {
-        return winfm?.hostname()
+        return winfmplg?.hostname()
     }
 
     username: () {
-        return winfm?.username()
+        return winfmplg?.username()
     }
 
     uptime: () {
-        return extractTime(winfm?.uptime())
+        return extractTime(winfmplg?.uptime())
     }
 
     cpus: () {
-        return winfm?.cpu_count()
+        return winfmplg?.cpu_count()
     }
 
 }
@@ -101,13 +102,12 @@ export const system = formula {
 export const battery = formula {
     status: () {
         let handle = thread {
-            let percent = winfm?.battery_percent()
-            let charging = winfm?.battery_charging()
-            let ac = winfm?.battery_on_ac_power()
-            let saver = winfm?.battery_saver()
-            let remaining = winfm?.battery_remaining_seconds()
-            let full = winfm?.battery_full_seconds()
-
+            let percent = winfmplg?.battery_percent()
+            let charging = winfmplg?.battery_charging()
+            let ac = winfmplg?.battery_on_ac_power()
+            let saver = winfmplg?.battery_saver()
+            let remaining = winfmplg?.battery_remaining_seconds()
+            let full = winfmplg?.battery_full_seconds()
             let percent_value = percent.tryInt()
             let remaining_value = remaining.tryInt()
             let full_value = full.tryInt()
@@ -117,22 +117,23 @@ export const battery = formula {
                 charging: charging.tryBool()
                 onAcPower: ac.tryBool()
                 saver: saver.tryBool()
-                remainng: extractSeconds(remaining_value)
+                remaining: extractSeconds(remaining_value)
                 full: extractSeconds(full_value)
             }
+
         }
 
         return await handle
     }
 
     batterySaver: () {
-        return winfm?.battery_saver()
+        return winfmplg?.battery_saver()
     }
 
     batterySaverToggle: () {
-        let saver = winfm?.battery_saver()
-        let charging = winfm?.battery_charging()
-        let ac = winfm?.battery_on_ac_power()
+        let saver = winfmplg?.battery_saver()
+        let charging = winfmplg?.battery_charging()
+        let ac = winfmplg?.battery_on_ac_power()
 
         // Never change power mode while connected to AC.
         if ac == true {
@@ -145,30 +146,28 @@ export const battery = formula {
         }
 
         if saver == false {
-            return winfm?.enable_power_saving()
+            return winfmplg?.enable_power_saving()
         }
 
         if saver == true {
-            return winfm?.disable_power_saving()
+            return winfmplg?.disable_power_saving()
         }
 
         return false
     }
+
 }
 
-// let c = winfm?.Clipboard.init()
-// c.get() // c.set("hello) // c.clear()
+export fn audio() -> Volume {
+    winfmplg.Volume.init()
+}
+
+export fn clipboard() -> Clipboard {
+    winfmplg.Clipboard.init()
+}
+
+export fn bluetooth() -> Bluetooth {
+    winfmplg.Bluetooth.init()
+}
 
 
-
-// let volume = winfm?.Volume.init()
-
-// print(volume.percent())
-
-// volume.set(50)
-
-// print(volume.percent())
-
-// print(volume.muted())
-
-// volume.set_muted(false)

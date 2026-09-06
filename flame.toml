@@ -7,4 +7,4 @@ type = "pkg"
 [dependencies]
 
 [plugins]
-winfm = "./native"
+winfmplg = "./native"

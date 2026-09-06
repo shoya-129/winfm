@@ -3,6 +3,17 @@
 version = 4
 
 [[package]]
+name = "flame-macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d882f3d6fb3ebfe521ed0752bfa040813c1acfb29e71758718e57dcd5a14ccb"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -148,8 +159,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "winfm"
+name = "winfmplg"
 version = "0.1.0"
 dependencies = [
+ "flame-macro",
  "windows",
 ]

@@ -2,6 +2,7 @@
 
 mod clipboard;
 mod system;
+mod bluetooth;
 
 pub use system::{
     battery_charging, battery_full_seconds, battery_on_ac_power, battery_percent,
@@ -14,3 +15,4 @@ pub use clipboard::Clipboard;
 mod audio;
 
 pub use audio::Volume;
+pub use bluetooth::Bluetooth;

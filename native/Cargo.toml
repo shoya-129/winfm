@@ -1,5 +1,5 @@
 [package]
-name = "winfm"
+name = "winfmplg"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,11 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 windows = { version = "0.62.2", features = [
+    # Foundation
+    "Foundation",
+    "Win32_Foundation",
+
+    # System
     "Win32_System_SystemInformation",
     "Win32_System_WindowsProgramming",
     "Win32_System_Shutdown",
@@ -16,11 +21,22 @@ windows = { version = "0.62.2", features = [
     "Win32_System_Registry",
     "Win32_System_DataExchange",
     "Win32_System_Memory",
-    "Win32_Foundation",
     "Win32_System_Com",
+
+    # Audio
     "Win32_Media_Audio",
     "Win32_Media_Audio_Endpoints",
+
+    # Bluetooth & Radios
+    "Devices_Bluetooth",
+    "Devices_Bluetooth_Advertisement",
+    "Devices_Bluetooth_GenericAttributeProfile",
+    "Devices_Bluetooth_Rfcomm",
+    "Devices_Enumeration",
+    "Devices_Radios",
 ] }
+
+flame-macro = "0.1.0"
 
 [profile.dev]
 split-debuginfo = "unpacked"

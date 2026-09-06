@@ -2,64 +2,377 @@
 
 `winfm` is a native Windows package for [Flame](https://github.com/shoya-129/flame) that provides a simple, high-level API for interacting with Windows system features.
 
-It gives Flame applications access to system information, machine controls, battery status, power management, clipboard operations, and master audio volume without exposing the underlying Windows APIs.
+It gives Flame applications access to system information, machine controls, battery status, power management, clipboard operations, master audio volume, and Bluetooth scanning and connectivity without exposing the underlying Windows APIs.
 
 ## Features
 
 * 🖥️ System information and machine controls
 * 🔋 Battery status and power management
-* 📋 Clipboard access
-* 🔊 Master volume control
+* 📋 System clipboard access
+* 🔊 Master audio volume and mute control
+* 📶 Bluetooth LE device scanning, discovery, and connection management
 * ⚡ Windows power-saving controls
 * 🪟 Native Windows integration
 
-The package keeps Windows-specific implementation details behind the package boundary. Flame applications interact with high-level APIs rather than Win32 handles, COM interfaces, Windows power APIs, or clipboard memory directly.
+The package keeps all Windows-specific implementation details behind the package boundary. Flame applications interact with clean, high-level APIs rather than Win32 handles, COM interfaces, Windows power APIs, or native runtime handles directly.
 
 ## Installation
 
 Add `winfm` to your Flame project:
 
 ```bash
-flame add https://github.com/shoya-129/winfm
+fmp add https://github.com/shoya-129/winfm
 ```
 
-### Standard package import
+### Import
 
-The high-level exported APIs are available through:
+All features are available directly from the standard `winfm` package:
 
 ```flame
 import winfm
 ```
 
-Use this import for:
+---
 
-* `winfm.system`
-* `winfm.battery`
+## Audio (Volume)
 
-### Native API import
+The audio API provides control over the Windows master audio volume and mute state.
 
-Clipboard and volume are native interfaces and require:
+### Getting the Audio Interface
+
+Call `winfm.audio()` and store the interface in a variable:
 
 ```flame
-import native.winfm
+import winfm
+
+let v = winfm.audio()
 ```
 
-Use this import when working with:
+### Read Master Volume
 
-* `winfm.Clipboard`
-* `winfm.Volume`
+```flame
+import winfm
+
+let v = winfm.audio()
+
+println(v.percent())
+```
+
+The returned value is an integer percentage from `0` to `100`.
+
+### Set Master Volume
+
+```flame
+import winfm
+
+let v = winfm.audio()
+
+v.set(50)
+```
+
+The value is automatically clamped to the supported `0` to `100` range.
+
+### Read Mute State
+
+```flame
+import winfm
+
+let v = winfm.audio()
+
+println(v.muted())
+```
+
+### Mute and Unmute
+
+Mute the audio:
+
+```flame
+import winfm
+
+let v = winfm.audio()
+
+v.setMuted(true)
+```
+
+Unmute the audio:
+
+```flame
+import winfm
+
+let v = winfm.audio()
+
+v.setMuted(false)
+```
+
+### Audio API Summary
+
+| Method                | Return Type | Description                              |
+| --------------------- | ----------- | ---------------------------------------- |
+| `winfm.audio()`       | `Volume`    | Creates the audio volume interface       |
+| `v.percent()`         | `Int`       | Returns the current master volume (0–100)|
+| `v.set(percent)`      | `Bool`      | Sets the master volume (clamped 0–100)   |
+| `v.muted()`           | `Bool`      | Returns whether the volume is muted      |
+| `v.setMuted(boolean)` | `Bool`      | Mutes (`true`) or unmutes (`false`) audio|
+
+### Audio Example
+
+```flame
+import winfm
+
+let v = winfm.audio()
+
+println("Current volume: " + v.percent().toString() + "%")
+println("Is muted: " + v.muted().toString())
+
+// Set volume to 65%
+v.set(65)
+println("New volume: " + v.percent().toString() + "%")
+
+// Toggle mute
+v.setMuted(true)
+println("Muted: " + v.muted().toString())
+v.setMuted(false)
+```
+
+---
+
+## Clipboard
+
+The clipboard API provides access to read, write, and clear the Windows system clipboard.
+
+### Getting the Clipboard Interface
+
+Call `winfm.clipboard()` and store the interface in a variable:
+
+```flame
+import winfm
+
+let c = winfm.clipboard()
+```
+
+### Read Clipboard Text
+
+```flame
+import winfm
+
+let c = winfm.clipboard()
+
+println(c.get())
+```
+
+### Set Clipboard Text
+
+```flame
+import winfm
+
+let c = winfm.clipboard()
+
+c.set("Hello from Flame!")
+```
+
+### Clear Clipboard
+
+```flame
+import winfm
+
+let c = winfm.clipboard()
+
+c.clear()
+```
+
+### Clipboard API Summary
+
+| Method              | Return Type | Description                                   |
+| ------------------- | ----------- | --------------------------------------------- |
+| `winfm.clipboard()` | `Clipboard` | Creates the clipboard interface               |
+| `c.get()`           | `String`    | Returns the current Unicode text from clipboard|
+| `c.set(text)`       | `Bool`      | Replaces clipboard contents with the text     |
+| `c.clear()`         | `Bool`      | Clears all content from the system clipboard  |
+
+### Clipboard Example
+
+```flame
+import winfm
+
+let c = winfm.clipboard()
+
+// Write text to clipboard
+c.set("Hello from Flame!")
+
+// Read and print clipboard text
+println("Clipboard contains: " + c.get())
+
+// Clear clipboard
+c.clear()
+```
+
+---
+
+## Bluetooth
+
+The Bluetooth API provides control over the system's Bluetooth radio (turning it on/off, checking status), scanning for nearby Bluetooth devices, discovering device details (names, MAC addresses, RSSI signal strength, advertisement types, and connectability), as well as connecting and disconnecting from devices.
+
+### Getting the Bluetooth Interface
+
+Call `winfm.bluetooth()` and store the interface in a variable:
+
+```flame
+import winfm
+
+let bt = winfm.bluetooth()
+```
+
+### Turning Bluetooth On and Off
+
+Check if Bluetooth radio is enabled:
+
+```flame
+let enabled = bt.isEnabled()
+println("Bluetooth enabled: " + enabled.toString())
+```
+
+Turn Bluetooth ON:
+
+```flame
+let success = bt.turnOn()
+println("Turned on: " + success.toString())
+```
+
+Turn Bluetooth OFF:
+
+```flame
+let success = bt.turnOff()
+println("Turned off: " + success.toString())
+```
+
+Or set the state directly:
+
+```flame
+bt.setEnabled(true)  // turn on
+bt.setEnabled(false) // turn off
+```
+
+### Scanning for Nearby Devices
+
+Start active background scanning:
+
+```flame
+import winfm
+
+let bt = winfm.bluetooth()
+
+bt.startScan()
+println("Scanning active: " + bt.isScanning().toString())
+```
+
+Stop scanning when done:
+
+```flame
+bt.stopScan()
+```
+
+### Inspecting Discovered Devices
+
+Get the full device list as a JSON string:
+
+```flame
+let listJson = bt.devices()
+println(listJson)
+```
+
+Each device in the JSON array contains:
+* `address`: Formatted MAC address (e.g., `"E4:5F:01:23:45:67"`)
+* `address_raw`: 64-bit integer address
+* `name`: Device local name (if advertised)
+* `rssi`: Signal strength in dBm
+* `connectable`: `true` if the device is connectable
+* `advertisement_type`: Advertisement type string (`"ConnectableUndirected"`, `"ConnectableDirected"`, etc.)
+
+You can also query devices individually by index (`0` to `deviceCount() - 1`):
+
+```flame
+let count = bt.deviceCount()
+println("Discovered devices: " + count.toString())
+
+let name = bt.getDeviceName(0)
+let addr = bt.getDeviceAddress(0)
+let rssi = bt.getDeviceRssi(0)
+let connectable = bt.isDeviceConnectable(0)
+
+println("Device 0: " + name + " [" + addr + "] RSSI: " + rssi.toString() + " Connectable: " + connectable.toString())
+```
+
+Clear discovered devices cache:
+
+```flame
+bt.clearDevices()
+```
+
+### Connecting to a Device
+
+Connect to a Bluetooth device by its formatted MAC address (`"XX:XX:XX:XX:XX:XX"`), hex address, or by discovered device name:
+
+```flame
+let success = bt.connect("E4:5F:01:23:45:67")
+if success {
+    println("Connected to: " + bt.connectedDeviceName())
+    println("Address: " + bt.connectedDeviceAddress())
+    println("Status: " + bt.connectionStatus())
+}
+```
+
+Check connection status:
+
+```flame
+println(bt.isConnected())        // Returns Bool
+println(bt.connectionStatus())    // Returns "connected" or "disconnected"
+```
+
+### Disconnecting
+
+```flame
+bt.disconnect()
+```
+
+### Bluetooth API Summary
+
+| Method                              | Return Type | Description                                                        |
+| ----------------------------------- | ----------- | ------------------------------------------------------------------ |
+| `winfm.bluetooth()`                 | `Bluetooth` | Creates the Bluetooth interface                                    |
+| `bt.isEnabled()`                    | `Bool`      | Returns whether Bluetooth radio is turned on / enabled             |
+| `bt.turnOn()`                       | `Bool`      | Turns the system's Bluetooth radio ON                              |
+| `bt.turnOff()`                      | `Bool`      | Turns the system's Bluetooth radio OFF                             |
+| `bt.setEnabled(boolean)`            | `Bool`      | Sets the Bluetooth radio state to on (`true`) or off (`false`)     |
+| `bt.startScan()`                    | `Bool`      | Starts active BLE advertisement scanning                           |
+| `bt.stopScan()`                     | `Bool`      | Stops the active BLE advertisement scan                            |
+| `bt.isScanning()`                   | `Bool`      | Returns whether scanning is currently active                       |
+| `bt.deviceCount()`                  | `Int`       | Returns the total number of discovered devices                     |
+| `bt.devices()`                      | `String`    | Returns all discovered devices formatted as a JSON array string    |
+| `bt.getDeviceName(index)`           | `String`    | Returns the name of the device at `index`                          |
+| `bt.getDeviceAddress(index)`        | `String`    | Returns the formatted MAC address of the device at `index`         |
+| `bt.getDeviceRssi(index)`           | `Int`       | Returns the signal strength (RSSI) of the device at `index`        |
+| `bt.isDeviceConnectable(index)`     | `Bool`      | Returns whether the device at `index` is connectable               |
+| `bt.clearDevices()`                 | `Bool`      | Clears the discovered device cache                                 |
+| `bt.pair(target)`                   | `Bool`      | Initiates pairing with a device by MAC address or name             |
+| `bt.isPaired()`                     | `Bool`      | Returns whether the current device is paired with Windows          |
+| `bt.connect(target)`                | `Bool`      | Connects/pairs to a device by MAC address or name                  |
+| `bt.disconnect()`                   | `Bool`      | Disconnects the currently connected device                         |
+| `bt.isConnected()`                  | `Bool`      | Returns whether a Bluetooth device is currently connected          |
+| `bt.connectionStatus()`             | `String`    | Returns connection status (`"connected"`, `"paired"`, etc.)        |
+| `bt.connectedDeviceName()`          | `String`    | Returns the name of the connected device                           |
+| `bt.connectedDeviceAddress()`       | `String`    | Returns the MAC address of the connected device                    |
+
+---
 
 ## System
 
-The `system` API provides information about the current Windows machine and controls for the current Windows session.
-
-Import it with:
+The `system` API provides information about the Windows computer and controls for the Windows session.
 
 ```flame
 import winfm
 ```
 
-### System information
+### System Information
 
 ```flame
 import winfm
@@ -69,22 +382,22 @@ let username = winfm.system.username()
 let cpus = winfm.system.cpus()
 let uptime = winfm.system.uptime()
 
-println(hostname)
-println(username)
-println(cpus)
-println(uptime)
+println("Hostname: " + hostname)
+println("Username: " + username)
+println("CPUs: " + cpus.toString())
+println("Uptime: " + uptime.h.toString() + "h " + uptime.min.toString() + "m " + uptime.sec.toString() + "s")
 ```
 
-### System API
+### System API Summary
 
-| API                       | Description                           |
-| ------------------------- | ------------------------------------- |
-| `winfm.system.hostname()` | Returns the Windows computer hostname |
-| `winfm.system.username()` | Returns the current Windows username  |
-| `winfm.system.cpus()`     | Returns the number of logical CPUs    |
-| `winfm.system.uptime()`   | Returns system uptime                 |
+| API                       | Return Type | Description                           |
+| ------------------------- | ----------- | ------------------------------------- |
+| `winfm.system.hostname()` | `String`    | Returns the Windows computer hostname |
+| `winfm.system.username()` | `String`    | Returns the current logged-in username|
+| `winfm.system.cpus()`     | `Int`       | Returns the number of logical CPUs    |
+| `winfm.system.uptime()`   | `Formula`   | Returns system uptime (`h`, `min`, `sec`)|
 
-### Machine controls
+### Machine Controls
 
 Lock the current Windows session:
 
@@ -118,528 +431,134 @@ import winfm
 winfm.system.shutdown()
 ```
 
-`restart()` and `shutdown()` request the corresponding Windows system operation.
-
-### System example
-
-```flame
-import winfm
-
-println("=== System ===")
-
-println("Hostname: " + winfm.system.hostname())
-println("Username: " + winfm.system.username())
-println("CPUs: " + winfm.system.cpus().toString())
-println("Uptime: " + winfm.system.uptime().toString())
-
-winfm.system.lock()
-```
+---
 
 ## Battery
 
-The `battery` API provides a high-level view of the current battery and power state.
-
-Import it with:
+The `battery` API provides real-time information about battery percentage, charging state, AC power, and battery saver settings.
 
 ```flame
 import winfm
 ```
 
-### Battery status
+### Battery Status
 
 ```flame
 import winfm
 
-let battery = winfm.battery.status()
+let b = winfm.battery.status()
 
-println(battery.percent)
-println(battery.charging)
-println(battery.onAcPower)
-println(battery.saver)
-println(battery.power_saving)
-print(battery.percent)
-print(battery.charging)
-print(battery.onAcPower)
-print(battery.saver)
-print(battery.saver)
+println("Percent: " + b.percent.toString() + "%")
+println("Charging: " + b.charging.toString())
+println("On AC Power: " + b.onAcPower.toString())
+println("Battery Saver: " + b.saver.toString())
+
+if b.remaining.available {
+    println(
+        "Remaining runtime: " +
+        b.remaining.h.toString() + "h " +
+        b.remaining.min.toString() + "m " +
+        b.remaining.sec.toString() + "s"
+    )
+}
 ```
 
 The returned `Battery` value contains:
 
-| Property       | Description                                   |
-| -------------- | --------------------------------------------- |
-| `percent`      | Current battery percentage                    |
-| `charging`     | Whether the battery is charging               |
-| `onAcPower`    | Whether the computer is connected to AC power |
-| `saver`        | Whether Windows battery saver is active       |
-| `saver`        | Current power-saving state                    |
-| `remaining`    | Estimated remaining battery runtime           |
-| `full`         | Estimated full battery runtime                |
+| Property    | Type       | Description                                   |
+| ----------- | ---------- | --------------------------------------------- |
+| `percent`   | `Int`      | Current battery percentage (0–100)            |
+| `charging`  | `Bool`     | Whether the battery is actively charging      |
+| `onAcPower` | `Bool`     | Whether the machine is connected to AC power  |
+| `saver`     | `Bool`     | Whether Windows battery saver mode is active  |
+| `remaining` | `Duration` | Estimated remaining battery runtime           |
+| `full`      | `Duration` | Estimated full battery charge runtime         |
 
-### Battery runtime
-
-Battery runtime is represented as a `Duration` value.
-
-```flame
-import winfm
-
-let battery = winfm.battery.status()
-
-let remaining = battery.remaining
-
-println(remaining.h)
-println(remaining.min)
-println(remaining.sec)
-println(remaining.available)
-```
+### Battery Runtime Duration
 
 A `Duration` contains:
 
-| Property    | Description                                 |
-| ----------- | ------------------------------------------- |
-| `h`         | Hours                                       |
-| `min`       | Minutes                                     |
-| `sec`       | Seconds                                     |
-| `available` | Whether Windows provided a runtime estimate |
+| Property    | Type   | Description                                 |
+| ----------- | ------ | ------------------------------------------- |
+| `h`         | `Int`  | Hours                                       |
+| `min`       | `Int`  | Minutes                                     |
+| `sec`       | `Int`  | Seconds                                     |
+| `available` | `Bool` | Whether Windows provided a valid estimate   |
 
-For example:
+### Battery Saver Controls
 
-```flame
-import winfm
-
-let battery = winfm.battery.status()
-
-if battery.remaining.available {
-    println(
-        "Remaining: " +
-        battery.remaining.h.toString() +
-        "h " +
-        battery.remaining.min.toString() +
-        "m " +
-        battery.remaining.sec.toString() +
-        "s"
-    )
-}
-```
-
-The same structure is available through `battery.full`.
-
-Battery runtime estimates are provided by Windows and may be unavailable on some systems or power states. When an estimate is unavailable, `available` is `false`.
-
-### Battery saver
-
-Read the current battery saver state:
+Check if battery saver is enabled:
 
 ```flame
-import winfm
-
 println(winfm.battery.batterySaver())
 ```
 
-Toggle power saving:
+Toggle battery saver:
 
 ```flame
-import winfm
-
 let changed = winfm.battery.batterySaverToggle()
-
-println(changed)
+println("Saver toggled: " + changed.toString())
 ```
 
-The toggle avoids changing the power-saving mode while the machine is connected to AC power or while the battery is charging.
+*Note: The toggle automatically avoids toggling power-saving mode when connected to AC power or while charging.*
 
-### Battery API
+### Battery API Summary
 
-| API                                  | Description                                |
-| ------------------------------------ | ------------------------------------------ |
-| `winfm.battery.status()`             | Returns the complete battery status        |
-| `winfm.battery.batterySaver()`       | Returns the current battery saver state    |
-| `winfm.battery.batterySaverToggle()` | Toggles the power-saving mode when allowed |
+| API                                  | Return Type | Description                                |
+| ------------------------------------ | ----------- | ------------------------------------------ |
+| `winfm.battery.status()`             | `Battery`   | Returns complete battery status            |
+| `winfm.battery.batterySaver()`       | `Bool`      | Returns current battery saver active state |
+| `winfm.battery.batterySaverToggle()` | `Bool`      | Toggles power-saving mode when allowed     |
 
-### Battery example
+---
+
+## Complete Example
+
+Here is an end-to-end example demonstrating all modules together using standard `import winfm`:
 
 ```flame
 import winfm
-
-let battery = winfm.battery.status()
-
-println("=== Battery ===")
-
-println("Battery: " + battery.percent.toString() + "%")
-println("Charging: " + battery.charging.toString())
-println("AC Power: " + battery.onAcPower.toString())
-println("Battery Saver: " + battery.saver.toString())
-println("Power Saving: " + battery.power_saving.toString())
-
-if battery.remaining.available {
-    println(
-        "Remaining: " +
-        battery.remaining.h.toString() +
-        "h " +
-        battery.remaining.min.toString() +
-        "m " +
-        battery.remaining.sec.toString() +
-        "s"
-    )
-}
-
-if battery.full.available {
-    println(
-        "Full Runtime: " +
-        battery.full.h.toString() +
-        "h " +
-        battery.full.min.toString() +
-        "m " +
-        battery.full.sec.toString() +
-        "s"
-    )
-}
-```
-
-## Clipboard
-
-The `Clipboard` API provides access to the Windows system clipboard.
-
-Clipboard is exposed through the native package interface, so use:
-
-```flame
-import native.winfm
-```
-
-### Create a clipboard interface
-
-```flame
-import native.winfm
-
-let clipboard = winfm.Clipboard.init()
-```
-
-The clipboard interface is lightweight. Windows owns the actual system clipboard.
-
-### Read clipboard text
-
-```flame
-import native.winfm
-
-let clipboard = winfm.Clipboard.init()
-
-println(clipboard.get())
-```
-
-### Set clipboard text
-
-```flame
-import native.winfm
-
-let clipboard = winfm.Clipboard.init()
-
-clipboard.set("Hello from Flame")
-```
-
-### Clear clipboard
-
-```flame
-import native.winfm
-
-let clipboard = winfm.Clipboard.init()
-
-clipboard.clear()
-```
-
-### Clipboard API
-
-| API                      | Description                        |
-| ------------------------ | ---------------------------------- |
-| `winfm.Clipboard.init()` | Creates a clipboard interface      |
-| `clipboard.get()`        | Returns the current clipboard text |
-| `clipboard.set(text)`    | Replaces the clipboard text        |
-| `clipboard.clear()`      | Clears the clipboard               |
-
-### Clipboard example
-
-```flame
-import native.winfm
-
-let clipboard = winfm.Clipboard.init()
-
-println(clipboard.get())
-
-let result = clipboard.set("Hello from Flame")
-
-println(result)
-println(clipboard.get())
-
-clipboard.clear()
-```
-
-## Volume
-
-The `Volume` API provides control over the Windows master audio volume.
-
-Volume is exposed through the native package interface, so use:
-
-```flame
-import native.winfm
-```
-
-### Create a volume interface
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-```
-
-### Read volume
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-println(volume.percent())
-```
-
-The returned value is a percentage from `0` to `100`.
-
-### Set volume
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-volume.set(50)
-```
-
-The value is clamped to the supported `0` to `100` range.
-
-### Read mute state
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-println(volume.muted())
-```
-
-### Mute and unmute
-
-Mute the system:
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-volume.set_muted(true)
-```
-
-Unmute the system:
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-volume.set_muted(false)
-```
-
-### Volume API
-
-| API                       | Description                              |
-| ------------------------- | ---------------------------------------- |
-| `winfm.Volume.init()`     | Creates a volume interface               |
-| `volume.percent()`        | Returns the current master volume        |
-| `volume.set(percent)`     | Sets the master volume from `0` to `100` |
-| `volume.muted()`          | Returns whether the volume is muted      |
-| `volume.set_muted(value)` | Mutes or unmutes the master volume       |
-
-### Volume example
-
-```flame
-import native.winfm
-
-let volume = winfm.Volume.init()
-
-println("Volume: " + volume.percent().toString())
-println("Muted: " + volume.muted().toString())
-
-volume.set(50)
-
-println("New Volume: " + volume.percent().toString())
-
-volume.set_muted(false)
-```
-
-## API overview
-
-The public Flame API is intentionally divided into high-level package APIs and native interfaces.
-
-### Standard APIs
-
-Import with:
-
-```flame
-import winfm
-```
-
-System:
-
-```text
-winfm.system.hostname()
-winfm.system.username()
-winfm.system.cpus()
-winfm.system.uptime()
-
-winfm.system.lock()
-winfm.system.sleep()
-winfm.system.restart()
-winfm.system.shutdown()
-```
-
-Battery:
-
-```text
-winfm.battery.status()
-winfm.battery.batterySaver()
-winfm.battery.batterySaverToggle()
-```
-
-### Native APIs
-
-Import with:
-
-```flame
-import native.winfm
-```
-
-Clipboard:
-
-```text
-winfm.Clipboard.init()
-
-clipboard.get()
-clipboard.set(text)
-clipboard.clear()
-```
-
-Volume:
-
-```text
-winfm.Volume.init()
-
-volume.percent()
-volume.set(percent)
-volume.muted()
-volume.set_muted(value)
-```
-
-This separation keeps the commonly used system and battery functionality exposed through a simple package API while native stateful interfaces such as clipboard and volume remain explicitly native.
-
-## Complete example
-
-The following example demonstrates the main `winfm` APIs together:
-
-```flame
-import winfm
-import native.winfm
 
 println("=== System ===")
-
 println("Hostname: " + winfm.system.hostname())
 println("Username: " + winfm.system.username())
 println("CPUs: " + winfm.system.cpus().toString())
-println("Uptime: " + winfm.system.uptime().toString())
 
 println("=== Battery ===")
+let b = winfm.battery.status()
+println("Battery: " + b.percent.toString() + "%")
+println("Charging: " + b.charging.toString())
+println("AC Power: " + b.onAcPower.toString())
+println("Battery Saver: " + b.saver.toString())
 
-let battery = winfm.battery.status()
-
-println("Battery: " + battery.percent.toString() + "%")
-println("Charging: " + battery.charging.toString())
-println("AC Power: " + battery.onAcPower.toString())
-println("Battery Saver: " + battery.saver.toString())
-println("Power Saving: " + battery.power_saving.toString())
-
-if battery.remaining.available {
-    println(
-        "Remaining: " +
-        battery.remaining.h.toString() +
-        "h " +
-        battery.remaining.min.toString() +
-        "m " +
-        battery.remaining.sec.toString() +
-        "s"
-    )
-}
+println("=== Audio ===")
+let v = winfm.audio()
+println("Volume: " + v.percent().toString() + "%")
+println("Muted: " + v.muted().toString())
+v.set(50)
+v.setMuted(false)
 
 println("=== Clipboard ===")
+let c = winfm.clipboard()
+c.set("Hello from Flame & winfm!")
+println("Clipboard: " + c.get())
 
-let clipboard = winfm.Clipboard.init()
-
-clipboard.set("Hello from Flame")
-
-println(clipboard.get())
-
-println("=== Volume ===")
-
-let volume = winfm.Volume.init()
-
-println("Volume: " + volume.percent().toString())
-println("Muted: " + volume.muted().toString())
-
-volume.set(50)
-
-println("New Volume: " + volume.percent().toString())
+println("=== Bluetooth ===")
+let bt = winfm.bluetooth()
+println("Bluetooth enabled: " + bt.isEnabled().toString())
+bt.startScan()
+println("Scanning: " + bt.isScanning().toString())
+println("Discovered devices: " + bt.devices())
+bt.stopScan()
 ```
 
-## Notice
+---
 
-`winfm` is a **Windows-only** native package.
+## Platform Support
 
-It requires:
+`winfm` is designed specifically for **Windows 10 and Windows 11**.
 
-* Windows
-
-The package is not intended for Linux or macOS.
-
-## Design
-
-`winfm` keeps the Windows-specific implementation behind the package boundary.
-
-A Flame application does not need to interact directly with Windows APIs such as:
-
-* Win32 system APIs
-* Windows power-management APIs
-* Windows clipboard handles
-* Windows audio APIs
-* COM interfaces
-
-Instead, the application uses the high-level `winfm` API:
-
-```text
-Flame application
-       │
-       ▼
-     winfm
-       │
-   ┌───┴─────────────────┐
-   │                     │
-   ▼                     ▼
-System / Battery   Native Interfaces
-                       │
-                 ┌─────┴─────┐
-                 ▼           ▼
-             Clipboard     Volume
-                 │           │
-                 └─────┬─────┘
-                       ▼
-                 Windows APIs
-```
-
-This keeps application code simple while allowing `winfm` to expose native Windows functionality.
+---
 
 ## Repository
 

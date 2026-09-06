@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
 use std::ffi::c_void;
-
+use flame_macro::flame;
 use windows::{
     core::{Interface, GUID, HRESULT},
     Win32::{
@@ -88,6 +88,7 @@ impl Volume {
     /// Mutes or unmutes the Windows master volume.
     ///
     /// Returns `true` when Windows successfully changes the mute state.
+    #[flame(rename = "setMuted")]
     pub fn set_muted(&self, muted: bool) -> bool {
         unsafe {
             if CoInitializeEx(None, COINIT_MULTITHREADED).is_err() {
